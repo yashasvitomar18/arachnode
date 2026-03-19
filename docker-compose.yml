@@ -12,6 +12,7 @@ version: "3.9"
 #   contact      — Contact discovery pipeline  (:8002)
 #   email-gen    — Cold email generator  (:8003)
 #   gateway      — API gateway + dashboard  (:8080)
+#   scheduler    — APScheduler pipeline automation (background)
 # ─────────────────────────────────────────────────────────────────────────────
 
 x-common-env: &common-env
@@ -158,6 +159,9 @@ services:
       SCRAPER_URL:    http://scraper:8000
       CONTACT_URL:    http://contact:8000
       EMAIL_GEN_URL:  http://email-gen:8000
+      SUMMARY_PATH:   /data/run_summary.json
+    volumes:
+      - scheduler_data:/data
     depends_on:
       aggregator:
         condition: service_healthy
@@ -175,8 +179,31 @@ services:
       retries: 5
       start_period: 30s
 
+  # ── Scheduler (APScheduler background process) ───────────────────────────────
+  scheduler:
+    build:
+      context: ./scheduler
+      dockerfile: Dockerfile
+    environment:
+      GATEWAY_URL:            http://gateway:8080
+      JOBSEEKER_ROLE:         ${JOBSEEKER_ROLE:-Backend Engineer}
+      JOBSEEKER_STACK:        ${JOBSEEKER_STACK:-Python,FastAPI,PostgreSQL,Redis,Go}
+      CRAWL_INTERVAL_HOURS:   ${CRAWL_INTERVAL_HOURS:-8}
+      DISCOVER_INTERVAL_HOURS: ${DISCOVER_INTERVAL_HOURS:-24}
+      SCRAPER_WAIT_SECS:      ${SCRAPER_WAIT_SECS:-60}
+      DISCOVER_DELAY_SECS:    ${DISCOVER_DELAY_SECS:-30}
+      SUMMARY_PATH:           /data/run_summary.json
+    volumes:
+      - scheduler_data:/data   # shared with gateway for GET /api/summary
+    depends_on:
+      gateway:
+        condition: service_healthy
+    networks: [jobnet]
+    restart: unless-stopped
+
 volumes:
   pgdata:
+  scheduler_data:    # shared between scheduler (writer) and gateway (reader)
 
 networks:
   jobnet:

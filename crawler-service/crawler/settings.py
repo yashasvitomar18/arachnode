@@ -57,7 +57,7 @@ REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 # Your profile — override via env vars or -s flags
 # --------------------------------------------------------------------------
 JOBSEEKER_ROLE = os.getenv("JOBSEEKER_ROLE", "Backend Engineer")
-JOBSEEKER_STACK = os.getenv("JOBSEEKER_STACK", "Python,Go,FastAPI,PostgreSQL,Kubernetes")
+JOBSEEKER_STACK = os.getenv("JOBSEEKER_STACK", "Java,Python,,RESTAPI,FastAPI,PostgreSQL,Kubernetes,Docker")
 
 # --------------------------------------------------------------------------
 # Misc

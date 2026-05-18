@@ -127,6 +127,11 @@ async def proxy_jobs(request: Request):
     return await proxy.proxy_request(request, f"{proxy.AGGREGATOR_URL}/jobs")
 
 
+@app.api_route("/api/jobs/export", methods=["GET"], tags=["proxy"])
+async def proxy_jobs_export(request: Request):
+    return await proxy.proxy_request(request, f"{proxy.AGGREGATOR_URL}/jobs/export")
+
+
 @app.api_route("/api/jobs/{path:path}", methods=["GET", "POST", "PATCH", "DELETE"], tags=["proxy"])
 async def proxy_jobs_path(path: str, request: Request):
     return await proxy.proxy_request(request, f"{proxy.AGGREGATOR_URL}/jobs/{path}")

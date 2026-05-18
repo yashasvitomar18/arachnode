@@ -965,6 +965,7 @@
           <button id="btn-view-grid" onclick="setView('grid')" title="Grid view">⊞ Grid</button>
           <button id="btn-view-kanban" onclick="setView('kanban')" title="Kanban view">☰ Kanban</button>
         </div>
+        <button class="btn-outline" id="btn-export-jobs">Export CSV</button>
       </div>
       <div id="jobs-grid" class="card-grid"></div>
       <div id="kanban-board"></div>
@@ -1248,7 +1249,7 @@
       const jobs = filteredJobs();
       const grid = document.getElementById('jobs-grid');
       if (!jobs.length) {
-        grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div><p>No jobs found. Trigger a scrape to get started.</p></div>`;
+        grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🕷️</div><p><strong>No jobs yet!</strong><br>Trigger your first scrape to get started.</p><button class="btn" style="margin-top:12px" onclick="document.getElementById('scrape-modal').classList.add('open')">🚀 Start First Scrape</button></div>`;
         return;
       }
       grid.innerHTML = jobs.map(j => `
@@ -1574,6 +1575,30 @@
       else if (tab === 'stats') loadStats();
     }
 
+    function exportJobsCSV() {
+      const params = new URLSearchParams();
+
+      if (state.filters.search.trim()) {
+        params.set('search', state.filters.search.trim());
+      }
+
+      if (state.filters.status !== 'all') {
+        params.set('status', state.filters.status);
+      }
+
+      if (state.filters.stack !== 'all') {
+        params.set('stack', state.filters.stack);
+      }
+
+      params.set('format', 'csv');
+
+      const exportUrl = API(`/jobs/export?${params.toString()}`);
+
+      window.open(exportUrl, '_blank');
+
+      toast('Preparing CSV export...', 'info');
+    }
+
     // ===========================================================================
     // === EVENT WIRING ===
     // ===========================================================================
@@ -1597,6 +1622,7 @@
       renderJobs();
     });
     document.getElementById('btn-refresh-jobs').addEventListener('click', () => loadJobs(true));
+    document.getElementById('btn-export-jobs').addEventListener('click', exportJobsCSV);
     document.getElementById('btn-refresh-contacts').addEventListener('click', () => {
       state.contacts = {};
       loadContacts(true);
